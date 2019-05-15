@@ -1,0 +1,4 @@
+{
+    "powershell.scriptAnalysis.settingsPath": "${workspaceFolder}/PSGallerya.psd1",
+    "powershell.scriptAnalysis.enable": true
+}
