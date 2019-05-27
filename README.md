@@ -6,7 +6,7 @@ Module contains Cmdlet `Invoke-ExternalCommand` that executes system's native co
 
 ## Problem 
 
-This module was created do to multiple issues in PowerShell regarding escaping of arguments to external processes. Even when using powershell call operator `&` with stop-parsing symbol `--%`  windows will interpolate environmental variable like `%OS%` into application arguments.
+This module was created due to multiple issues in PowerShell related to escaping of arguments for external processes. Even when using powershell call operator `&` with stop-parsing symbol `--%`  windows will interpolate environmental variable like `%OS%` into application arguments.
 
 ## Features
 
@@ -15,6 +15,7 @@ This module was created do to multiple issues in PowerShell regarding escaping o
 - Displays STDOUT/STDERR output while it runs
 - By default throws exception if application process exits with non 0 exit code
 - Allows capturing of STDOUT, STDERR, STDOUT combined with STDERR and exit code into PowerShell variables
+- Allows to hide STDERR, STDOUT or sensitive arguments from host output if required
 
 **Nuances**
 
@@ -38,7 +39,6 @@ Install-Module -Name ExternalCommand
 
 ```pwsh
 $ Get-Help Invoke-ExternalCommand -Full
-
 NAME
     Invoke-ExternalCommand
 
@@ -50,7 +50,8 @@ SYNOPSIS
 
 
 SYNTAX
-    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments] <Int32[]>] [[-OutVarStdout] <String>] [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return] [-IgnoreExitCode] [<CommonParameters>]
+    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments] <Int32[]>] [[-OutVarStdout] <String>] [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return]
+    [-IgnoreExitCode] [-HideStdout] [-HideStderr] [<CommonParameters>]
 
 
 DESCRIPTION
@@ -125,16 +126,34 @@ PARAMETERS
 
     -IgnoreExitCode [<SwitchParameter>]
         Specify if you expect non 0 exit code from the Command and would like to avoid non 0 exit code exception.
+
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -HideStdout [<SwitchParameter>]
+        Specify if don't want STDOUT to be written to the host
+
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -HideStderr [<SwitchParameter>]
+        Specify if don't want STDERR to be written to the host
         # .EXAMPLE
-        âžœ Invoke-ExternalCommand -Command git -Arguments version
+        âzo Invoke-ExternalCommand -Command git -Arguments version
         Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
         git version 2.20.1.windows.1
 
-        âžœ Invoke-ExternalCommand -Command helm -Arguments version,--client
+        âzo Invoke-ExternalCommand -Command helm -Arguments version,--client
         Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "version" "--client"
         Client: &version.Version{SemVer:"v2.12.2", GitCommit:"7d2b0c73d734f6586ed222a567c5d103fed435be", GitTreeState:"clean"}
 
-        âžœ Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
+        âzo Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
         Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "versiondd" "--client"
         Error: unknown command "versiondd" for "helm"
         Did you mean this?

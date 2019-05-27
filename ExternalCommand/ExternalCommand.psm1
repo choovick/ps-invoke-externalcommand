@@ -1,8 +1,9 @@
 <#
 .SYNOPSIS
-This is a helper function that runs a external executable binary and checks exit code for success
-to see if an error occurred. If an non 0 exit code is detected then an exception is thrown by default.
-It also properly creates and escapes arguments supplied via Arguments array parameter. Supports UTF8
+This is a helper function that runs a external executable binary and checks 
+exit code for success to see if an error occurred. If an non 0 exit code is
+detected then an exception is thrown by default. It also properly creates 
+and escapes arguments supplied via Arguments array parameter. Supports UTF8 
 and whitespace in the argument values.
 .PARAMETER Command
 Executable name/command to run. Must be available at PATH env var or you can specify full path to the binary.
@@ -23,6 +24,10 @@ By default this function returns $null, if specified you will get this object:
 Stdout output sequence order is guaranteed, while Stderr lines sequence might be out of order (eventing nature?).
 .PARAMETER IgnoreExitCode
 Specify if you expect non 0 exit code from the Command and would like to avoid non 0 exit code exception.
+.PARAMETER HideStdout
+Specify if don't want STDOUT to be written to the host
+.PARAMETER HideStderr
+Specify if don't want STDERR to be written to the host
 # .EXAMPLE
 ➜ Invoke-ExternalCommand -Command git -Arguments version
 Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
@@ -62,7 +67,9 @@ function Invoke-ExternalCommand
         [string]$OutVarStderr = $null,
         [string]$OutVarCode = $null,
         [switch]$Return,
-        [switch]$IgnoreExitCode
+        [switch]$IgnoreExitCode,
+        [switch]$HideStdout,
+        [switch]$HideStderr
     )
     # setting desired $ErrorActionPreference, backup old one
     $OldErrorActionPreference = $ErrorActionPreference
@@ -109,6 +116,9 @@ function Invoke-ExternalCommand
     # please no shell
     $pinfo.UseShellExecute = $false
 
+    # set process working directory
+    $pinfo.WorkingDirectory = (Get-Location).Path
+
     # adding arguments if needed
     if ($Arguments.Length -gt 0)
     {
@@ -137,7 +147,10 @@ function Invoke-ExternalCommand
         {
             $Event.MessageData.Stderr += "$EventData`n"
             $Event.MessageData.All += "$EventData`n"
-            Write-Host $EventData -ForegroundColor Gray
+            if (!$HideStderr)
+            {
+                Write-Host $EventData -ForegroundColor Gray
+            }
         }
     }
 
@@ -156,7 +169,10 @@ function Invoke-ExternalCommand
         $StdoutLine = $p.StandardOutput.ReadLine()
         if ($null -ne $StdoutLine)
         {
-            Write-Host $StdoutLine -ForegroundColor Green
+            if (!$HideStdout)
+            {
+                Write-Host $StdoutLine -ForegroundColor Green
+            }
             $Results.Stdout += $StdoutLine
             $Results.All += $StdoutLine
             if (!$p.StandardOutput.EndOfStream)
