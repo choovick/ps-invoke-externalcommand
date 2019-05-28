@@ -23,9 +23,7 @@ This module was created due to multiple issues in PowerShell related to escaping
 
 ## Demo
 
-Terminalizer recording
-
-[https://terminalizer.com/view/49acb54a979](https://terminalizer.com/view/49acb54a979)
+![](assets/demo.gif)
 
 ## Install
 
