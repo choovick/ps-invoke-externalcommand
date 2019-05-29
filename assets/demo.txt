@@ -1,0 +1,42 @@
+# Set some complex arguments with various special characters inside 
+
+$TestArguments = @(
+'simple',
+'white space',
+'slash at the end \',
+'double slash at the end \\',
+'trippe slash at the end \\\',
+'\\" double slashed double quote',
+'double slashed double quote at the end \\"',
+'\\\" triple slashed double quote',
+'triple slashed double quote at the end \\\"',
+# slash
+'single slashes \a ^ \: \"',
+# quotes
+'double quote " and single quote ''',
+# windows env var syntax
+"env var OS: %OS%",
+# utf16
+('"utf16 ETHIOPIC WORDSPACE: \u1361"' | ConvertFrom-Json),
+# special chars
+"newLine`newLine"
+"tab`tab"
+"backspace`bbackspace"
+"carriage`rafter",
+"formFeed`fformFeed"
+)
+
+# Running EchoArgs app written in GOLANG
+Invoke-ExternalCommand -Command .\goecho\echo -Arguments $TestArguments
+
+# Now lets capture STDOUT, STDERR, STDOUT+STDERR and Exit Code
+$Results = Invoke-ExternalCommand -Command .\goecho\echo -Arguments $TestArguments -OutVarStderr Stderr -OutVarStdout Stdout -OutVarCode AppExitCode -Return
+
+$Stdout
+$Stderr
+$AppExitCode
+$Results
+$Results.All
+
+# By Default exception is thrown when non 0 exit code is returned by application process
+Invoke-ExternalCommand -Command npm -Arguments invalidArgg

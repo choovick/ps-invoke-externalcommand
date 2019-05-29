@@ -83,18 +83,18 @@ function Invoke-ExternalCommand
 
     # for debug info hiding args
     # looping through all arguments
-    $ArgsToShow = @()
+    $ArgsToShow = New-Object System.Collections.Generic.List[String]
 
     for ($i = 0; $i -lt $Arguments.length; $i++)
     {
         # replacing sensitive arguments with "<sensitive>"
         if ($HideArguments -contains $i)
         {
-            $ArgsToShow += "<sensitive>"
+            $ArgsToShow.Add("<sensitive>")
         }
         else
         {
-            $ArgsToShow += $Arguments[$i]
+            $ArgsToShow.Add($Arguments[$i])
         }
     }
     if ($ArgsToShow.Length -gt 0)
@@ -238,17 +238,25 @@ function EscapeArguments
     param (
         [string[]]$Arguments
     )
-    $EscapedArguments = @()
+    $EscapedArguments = New-Object System.Collections.Generic.List[String]
     foreach ($EscapedArg in $Arguments)
     {
         # https://docs.microsoft.com/en-gb/windows/desktop/api/shellapi/nf-shellapi-commandlinetoargvw
         # https://stackoverflow.com/questions/21314633/how-do-i-pass-a-literal-double-quote-from-powershell-to-a-native-command
-
-        # escaped all non escaped slashed followed by quotes (no more org before quote, so quote is never end/begin arg char)
-        $EscapedArg = $EscapedArg -replace '(\\*)\"', '$1$1\"'
-
+        
+        # stdlib Rules: 
+        # 2N backslashes + " ==> N backslashes and begin/end quote
+        # 2N+1 backslashes + " ==> N backslashes + literal " 
+        # N backslashes ==> N backslashes
+        
+        # escaping each slash
+        $EscapedArg = $EscapedArg.Replace('\','\\')
+        # escaping double quotes as we use them to indicate start/end of argument
+        $EscapedArg = $EscapedArg.Replace('"','\"')
+        # wrapping argument
         $EscapedArg = "`"$EscapedArg`""
-        $EscapedArguments += $EscapedArg
+        # appending to result
+        $EscapedArguments.Add($EscapedArg)
         Write-Verbose "Escaped Arguments: $EscapedArg"
 
     }

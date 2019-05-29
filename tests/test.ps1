@@ -22,10 +22,13 @@ $JsonObjectString = (ConvertTo-Json $JsonObject -Depth 5 -Compress)
 $Arguments = @(
     'simple',
     'white space',
-    # double slash
+    'slash at the end \',
+    'double slash at the end \\',
+    'trippe slash at the end \\\',
     '\\" double slashed double quote',
-    # triple slash
+    'double slashed double quote at the end \\"',
     '\\\" triple slashed double quote',
+    'triple slashed double quote at the end \\\"',
     # slash
     'single slashes \a ^ \: \"',
     # quotes
