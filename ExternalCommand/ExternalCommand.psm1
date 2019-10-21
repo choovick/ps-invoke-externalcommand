@@ -28,6 +28,8 @@ Specify if you expect non 0 exit code from the Command and would like to avoid n
 Specify if don't want STDOUT to be written to the host
 .PARAMETER HideStderr
 Specify if don't want STDERR to be written to the host
+.PARAMETER HideCommand
+Specify if don't want `Running command` informational message to be written to the host STDERR
 # .EXAMPLE
 ➜ Invoke-ExternalCommand -Command git -Arguments version
 Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
@@ -69,14 +71,15 @@ function Invoke-ExternalCommand
         [switch]$Return,
         [switch]$IgnoreExitCode,
         [switch]$HideStdout,
-        [switch]$HideStderr
+        [switch]$HideStderr,
+        [switch]$HideCommand
     )
     # setting desired $ErrorActionPreference, backup old one
     $OldErrorActionPreference = $ErrorActionPreference
     $ErrorActionPreference = "Stop"
 
     $CommandObject = (Get-Command $Command -CommandType Application -ErrorAction Ignore | Select-Object -First 1)
-    if (! $CommandObject)
+    if (!$CommandObject)
     {
         throw "Invalid application name\path provided (Cmdlets not supported): $Command"
     }
@@ -102,7 +105,11 @@ function Invoke-ExternalCommand
         $ArgsToShow = (EscapeArguments($ArgsToShow))
     }
     # Displaying what will be executed
-    Write-Host -Object "Running command [", $CommandObject.Source, "] with arguments:", $ArgsToShow -ForegroundColor Yellow
+    if (!$HideCommand)
+    {
+        # output to STDERR not to corrupt STDOUT
+        [Console]::Error.WriteLine([string]::Format("Running command [{0}] with arguments: {1}", $CommandObject.Source, $ArgsToShow -join " "))
+    }
 
     $pinfo = New-Object System.Diagnostics.ProcessStartInfo
     # Full pth to the binary
@@ -133,10 +140,11 @@ function Invoke-ExternalCommand
 
     # object in which we will capture STDOUT and STDERR
     $Results = @{
-        Stderr = ""
-        Stdout = ""
-        All    = ""
-        Code   = 0
+        Stderr     = ""
+        Stdout     = ""
+        All        = ""
+        Code       = 0
+        HideStderr = $HideStderr
     }
 
     # Event handler for STDERR lines
@@ -147,14 +155,14 @@ function Invoke-ExternalCommand
         {
             $Event.MessageData.Stderr += "$EventData`n"
             $Event.MessageData.All += "$EventData`n"
-            if (!$HideStderr)
+            if (!$Event.MessageData.HideStderr)
             {
-                Write-Host $EventData -ForegroundColor Gray
+                [Console]::Error.WriteLine($EventData)
             }
         }
     }
 
-    # STDERR might get captured out of sequence
+    # STDOUT might get captured out of sequence
     $ErrEvent = Register-ObjectEvent -InputObject $p -EventName ErrorDataReceived -Action $ErrAction -MessageData $Results
     # Start command process
     $p.Start() | Out-Null
@@ -184,6 +192,9 @@ function Invoke-ExternalCommand
         }
     } while (!$p.HasExited -or !$ErrEvent.HasMoreData -or !$p.StandardOutput.EndOfStream)
     Unregister-Event -SourceIdentifier $ErrEvent.Name
+
+    # Cleanup flag we used in the error event handler
+    $Results.Remove('HideStderr')
 
     # Some Trimming
     $Results.Stderr = $Results.Stderr.TrimEnd("`n")
@@ -250,9 +261,9 @@ function EscapeArguments
         # N backslashes ==> N backslashes
         
         # escaping each slash
-        $EscapedArg = $EscapedArg.Replace('\','\\')
+        $EscapedArg = $EscapedArg.Replace('\', '\\')
         # escaping double quotes as we use them to indicate start/end of argument
-        $EscapedArg = $EscapedArg.Replace('"','\"')
+        $EscapedArg = $EscapedArg.Replace('"', '\"')
         # wrapping argument
         $EscapedArg = "`"$EscapedArg`""
         # appending to result
