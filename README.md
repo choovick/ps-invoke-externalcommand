@@ -41,15 +41,15 @@ NAME
     Invoke-ExternalCommand
 
 SYNOPSIS
-    This is a helper function that runs a external executable binary and checks exit code for success
-    to see if an error occurred. If an non 0 exit code is detected then an exception is thrown by default.
-    It also properly creates and escapes arguments supplied via Arguments array parameter. Supports UTF8
+    This is a helper function that runs a external executable binary and checks
+    exit code for success to see if an error occurred. If an non 0 exit code is
+    detected then an exception is thrown by default. It also properly creates
+    and escapes arguments supplied via Arguments array parameter. Supports UTF8
     and whitespace in the argument values.
 
 
 SYNTAX
-    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments] <Int32[]>] [[-OutVarStdout] <String>] [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return]
-    [-IgnoreExitCode] [-HideStdout] [-HideStderr] [<CommonParameters>]
+    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments] <Int32[]>] [[-OutVarStdout] <String>] [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return] [-IgnoreExitCode] [-HideStdout] [-HideStderr] [-HideCommand] [<CommonParameters>]
 
 
 DESCRIPTION
@@ -142,16 +142,25 @@ PARAMETERS
 
     -HideStderr [<SwitchParameter>]
         Specify if don't want STDERR to be written to the host
+
+        Required?                    false
+        Position?                    named
+        Default value                False
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -HideCommand [<SwitchParameter>]
+        Specify if don't want `Running command` informational message to be written to the host STDERR
         # .EXAMPLE
-        âzo Invoke-ExternalCommand -Command git -Arguments version
+        âžœ Invoke-ExternalCommand -Command git -Arguments version
         Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
         git version 2.20.1.windows.1
 
-        âzo Invoke-ExternalCommand -Command helm -Arguments version,--client
+        âžœ Invoke-ExternalCommand -Command helm -Arguments version,--client
         Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "version" "--client"
         Client: &version.Version{SemVer:"v2.12.2", GitCommit:"7d2b0c73d734f6586ed222a567c5d103fed435be", GitTreeState:"clean"}
 
-        âzo Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
+        âžœ Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
         Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "versiondd" "--client"
         Error: unknown command "versiondd" for "helm"
         Did you mean this?
