@@ -49,7 +49,10 @@ SYNOPSIS
 
 
 SYNTAX
-    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments] <Int32[]>] [[-OutVarStdout] <String>] [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return] [-IgnoreExitCode] [-HideStdout] [-HideStderr] [-HideCommand] [<CommonParameters>]
+    Invoke-ExternalCommand [-Command] <String> [[-Arguments] <String[]>] [[-HideArguments]
+    <Int32[]>] [[-DontEscapeArguments] <Int32[]>] [[-OutVarStdout] <String>]
+    [[-OutVarStderr] <String>] [[-OutVarCode] <String>] [-Return] [-IgnoreExitCode]
+    [-HideStdout] [-HideStderr] [-HideCommand] [<CommonParameters>]
 
 
 DESCRIPTION
@@ -57,7 +60,8 @@ DESCRIPTION
 
 PARAMETERS
     -Command <String>
-        Executable name/command to run. Must be available at PATH env var or you can specify full path to the binary.
+        Executable name/command to run. Must be available at PATH env var or you can specify
+        full path to the binary.
 
         Required?                    true
         Position?                    1
@@ -75,7 +79,8 @@ PARAMETERS
         Accept wildcard characters?  false
 
     -HideArguments <Int32[]>
-        List indexes (starting with 0) of arguments you would like to obscure in the message that command and its
+        List indexes (starting with 0) of arguments you would like to obscure in the message
+        that command and its
         arguments that being executed.
 
         Required?                    false
@@ -84,20 +89,32 @@ PARAMETERS
         Accept pipeline input?       false
         Accept wildcard characters?  false
 
-    -OutVarStdout <String>
-        Provide variable name that will be used to save STDOUT output of the command execution.
+    -DontEscapeArguments <Int32[]>
+        List indexes (starting with 0) of arguments you would like to skip escape logic on.
+        When used, unless is a simple argument it's on you to escape it correctly
 
         Required?                    false
         Position?                    4
+        Default value                @()
+        Accept pipeline input?       false
+        Accept wildcard characters?  false
+
+    -OutVarStdout <String>
+        Provide variable name that will be used to save STDOUT output of the command
+        execution.
+
+        Required?                    false
+        Position?                    5
         Default value
         Accept pipeline input?       false
         Accept wildcard characters?  false
 
     -OutVarStderr <String>
-        Provide variable name that will be used to save STDERR output of the command execution.
+        Provide variable name that will be used to save STDERR output of the command
+        execution.
 
         Required?                    false
-        Position?                    5
+        Position?                    6
         Default value
         Accept pipeline input?       false
         Accept wildcard characters?  false
@@ -106,15 +123,17 @@ PARAMETERS
         Provide variable name that will be used to save process exit code.
 
         Required?                    false
-        Position?                    6
+        Position?                    7
         Default value
         Accept pipeline input?       false
         Accept wildcard characters?  false
 
     -Return [<SwitchParameter>]
         By default this function returns $null, if specified you will get this object:
-        @{Stdout="Contains Stdout",Stderr="Contains Stderr",All="Stdout and Stderr output as it was generated",Code="Int from process exit code"}
-        Stdout output sequence order is guaranteed, while Stderr lines sequence might be out of order (eventing nature?).
+        @{Stdout="Contains Stdout",Stderr="Contains Stderr",All="Stdout and Stderr output as
+        it was generated",Code="Int from process exit code"}
+        Stdout output sequence order is guaranteed, while Stderr lines sequence might be out
+        of order (eventing nature?).
 
         Required?                    false
         Position?                    named
@@ -123,7 +142,8 @@ PARAMETERS
         Accept wildcard characters?  false
 
     -IgnoreExitCode [<SwitchParameter>]
-        Specify if you expect non 0 exit code from the Command and would like to avoid non 0 exit code exception.
+        Specify if you expect non 0 exit code from the Command and would like to avoid non 0
+        exit code exception.
 
         Required?                    false
         Position?                    named
@@ -150,31 +170,8 @@ PARAMETERS
         Accept wildcard characters?  false
 
     -HideCommand [<SwitchParameter>]
-        Specify if don't want `Running command` informational message to be written to the host STDERR
-        # .EXAMPLE
-        âžœ Invoke-ExternalCommand -Command git -Arguments version
-        Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
-        git version 2.20.1.windows.1
-
-        âžœ Invoke-ExternalCommand -Command helm -Arguments version,--client
-        Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "version" "--client"
-        Client: &version.Version{SemVer:"v2.12.2", GitCommit:"7d2b0c73d734f6586ed222a567c5d103fed435be", GitTreeState:"clean"}
-
-        âžœ Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
-        Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "versiondd" "--client"
-        Error: unknown command "versiondd" for "helm"
-        Did you mean this?
-
-
-                version
-        Run 'helm --help' for usage.
-
-        Command returned non zero exit code of '1'. Command: helm
-        At C:\Users\apopovich\dev\ps-modules\Igloo.Powershell.ExternalCommand\Igloo.Powershell.ExternalCommand.psm1:237 char:9
-        +         throw ([string]::Format("Command returned non zero exit code  ...
-        +         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            + CategoryInfo          : OperationStopped: (Command returne.... Command: helm:String) [], RuntimeException
-            + FullyQualifiedErrorId : Command returned non zero exit code of '1'. Command: helm
+        Specify if don't want `Running command` informational message to be written to the
+        host STDERR
 
         Required?                    false
         Position?                    named
@@ -192,6 +189,41 @@ INPUTS
 
 OUTPUTS
     System.Collections.Hashtable
+
+
+    -------------------------- EXAMPLE 1 --------------------------
+
+    >Invoke-ExternalCommand -Command git -Arguments version
+
+    Running command [ C:\Program Files\Git\cmd\git.exe ] with arguments: "version"
+    git version 2.20.1.windows.1
+
+    > Invoke-ExternalCommand -Command helm -Arguments version,--client
+    Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "version"
+    "--client"
+    Client: &version.Version{SemVer:"v2.12.2",
+    GitCommit:"7d2b0c73d734f6586ed222a567c5d103fed435be", GitTreeState:"clean"}
+
+    > Invoke-ExternalCommand -Command helm -Arguments versiondd,--client
+    Running command [ C:\ProgramData\chocolatey\bin\helm.exe ] with arguments: "versiondd"
+    "--client"
+    Error: unknown command "versiondd" for "helm"
+    Did you mean this?
+
+
+        version
+    Run 'helm --help' for usage.
+
+    Command returned non zero exit code of '1'. Command: helm
+    At C:\Users\user\dev\ps-modules\Igloo.Powershell.ExternalCommand\Igloo.Powershell.Externa
+    lCommand.psm1:237 char:9
+    +         throw ([string]::Format("Command returned non zero exit code  ...
+    +         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Command returne.... Command: helm:String)
+    [], RuntimeException
+    + FullyQualifiedErrorId : Command returned non zero exit code of '1'. Command: helm
+
+
 
 
 

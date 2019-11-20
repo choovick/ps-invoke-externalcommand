@@ -1,24 +1,31 @@
 @{
-    IncludeRules=@('PSUseApprovedVerbs',
-                   'PSReservedCmdletChar',
-                   'PSReservedParams',
-                   'PSShouldProcess',
-                   'PSUseShouldProcessForStateChangingFunctions',
-                   'PSUseSingularNouns',
-                   'PSMissingModuleManifestField',
-                   'PSAvoidDefaultValueSwitchParameter',
-                   'PSAvoidUsingCmdletAliases',
-                   'PSAvoidUsingWMICmdlet',
-                   'PSAvoidUsingEmptyCatchBlock',
-                   'PSUseCmdletCorrectly',
-                   'PSUseShouldProcessForStateChangingFunctions',
-                   'PSAvoidUsingPositionalParameters',
-                   'PSAvoidGlobalVars',
-                   'PSUseDeclaredVarsMoreThanAssignments',
-                   'PSAvoidUsingInvokeExpression',
-                   'PSAvoidUsingPlainTextForPassword',
-                   'PSAvoidUsingComputerNameHardcoded',
-                   'PSUsePSCredentialType',
-                   'PSDSC*'
-                   )
+    ExcludeRules = @('PSAvoidUsingWriteHost',
+                     'PSAvoidUsingConvertToSecureStringWithPlainText',
+                     'PSAvoidUsingComputerNameHardcoded',
+                     'PSAvoidUsingPlainTextForPassword',
+                     'PSAvoidUsingUserNameAndPassWordParams')
+
+    Rules = @{
+        PSPlaceOpenBrace  = @{
+            Enable                  = $true
+            OnSameLine              = $false
+            NewLineAfter            = $true
+            IgnoreOneLineBlock      = $true
+        }
+
+        PSPlaceCloseBrace = @{
+            Enable                  = $true
+            NoEmptyLineBefore       = $false
+            IgnoreOneLineBlock      = $true
+            NewLineAfter            = $true
+        }
+
+        PSProvideCommentHelp = @{
+            Enable                  = $true
+            ExportedOnly            = $false
+            BlockComment            = $true
+            VSCodeSnippetCorrection = $false
+            Placement               = "before"
+        }
+    }
 }

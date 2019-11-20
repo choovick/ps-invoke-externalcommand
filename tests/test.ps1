@@ -20,17 +20,26 @@ $JsonObject = @{
 $JsonObjectString = (ConvertTo-Json $JsonObject -Depth 5 -Compress)
 
 $Arguments = @(
+    'trippe slash at the end \\\',
+    '4 slash at the end \\\\',
+    '\\servername\path\',
+    'path=\\servername\path\',
+    'key="\\servername\pa th\"',
+    '5 slash at the end \\\\\',
+    '\\" double slashed double quote',
     'simple',
     'white space',
     'slash at the end \',
     'double slash at the end \\',
     'trippe slash at the end \\\',
+    'trippe slash at the end with space \\\ ',
     '\\" double slashed double quote',
     'double slashed double quote at the end \\"',
     '\\\" triple slashed double quote',
     'triple slashed double quote at the end \\\"',
     # slash
     'single slashes \a ^ \: \"',
+    'path="C:\Program Files (x86)\test\"'
     # quotes
     'double quote " and single quote ''',
     # windows env var syntax
@@ -50,16 +59,13 @@ $Arguments = @(
 "@
 )
 
-#invoke-process -Command 'echoargs' -Arguments $Arguments
-# Import-Module Igloo.Powershell.ExternalCommand
-
 # GO UTF8 supported
 Invoke-ExternalCommand -Command "$PSScriptRoot/goecho/echo.exe" -Arguments $Arguments
 
 # Windows Binary - no UTF8
 if ($IsWindows)
 {
-    Invoke-ExternalCommand -Command "$PSScriptRoot/echoargs/EchoArgs" -Arguments $Arguments
+    Invoke-ExternalCommand -Command "$PSScriptRoot/echoargs/EchoArgs" -Arguments $Arguments -DontEscapeArguments @(7)
 }
 
 # Java Jar - no UTF8
